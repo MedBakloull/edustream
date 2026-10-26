@@ -6,6 +6,7 @@ import com.edustream.backend.service.EnrollmentService;
 import com.edustream.backend.service.PaymentService;
 import com.edustream.backend.service.UnleashService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,18 @@ public class PaymentController {
 
     @PostMapping("/process")
     public ResponseEntity<Map<String, Object>> processPayment(@RequestBody @Valid PaymentRequestDTO request) {
+
+        // KILL SWITCH: if canary flag is OFF, enrollment is blocked instantly
+        if (!unleashService.isCanaryEnrollmentEnabled()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Enrollment is temporarily unavailable. Please try again later.");
+            error.put("canary", false);
+            error.put("version", "v1-stable");
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+        }
+
+        // Flag is ON — process enrollment normally (canary v2)
         String studentIdentifier = request.getStudentId() != null ? request.getStudentId() : request.getStudentEmail();
 
         EnrollmentService.EnrollmentResult result = enrollmentService.enrollStudent(
@@ -41,18 +54,15 @@ public class PaymentController {
                 null
         );
 
-        boolean canary = unleashService.isCanaryEnrollmentEnabled();
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("enrollmentId", result.getEnrollment().getId());
         response.put("paymentId", result.getPaymentId());
         response.put("status", result.getEnrollment().getStatus());
         response.put("courseId", request.getCourseId());
-        response.put("canary", canary);
-        response.put("version", canary ? "v2-canary" : "v1-stable");
-        response.put("message", canary
-                ? "Paiement confirme [Canary v2 - traitement instantane] (" + request.getAmount() + " MAD)"
-                : "Paiement et inscription traites avec succes (" + request.getAmount() + " MAD)");
+        response.put("canary", true);
+        response.put("version", "v2-canary");
+        response.put("message", "Paiement et inscription traites avec succes (" + request.getAmount() + " MAD)");
         return ResponseEntity.ok(response);
     }
 
