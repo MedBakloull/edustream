@@ -57,6 +57,12 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Unleash Feature Flags SDK -->
+        <dependency>
+            <groupId>io.getunleash</groupId>
+            <artifactId>unleash-client-java</artifactId>
+            <version>9.2.4</version>
+        </dependency>
 
         <!-- Testing Dependencies -->
         <dependency>

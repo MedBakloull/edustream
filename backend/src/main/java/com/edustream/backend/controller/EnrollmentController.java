@@ -5,11 +5,13 @@ import com.edustream.backend.model.Enrollment;
 import com.edustream.backend.service.CourseService;
 import com.edustream.backend.service.EnrollmentService;
 import com.edustream.backend.service.StudentService;
+import com.edustream.backend.service.UnleashService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,11 +23,14 @@ public class EnrollmentController {
     private final EnrollmentService enrollmentService;
     private final StudentService studentService;
     private final CourseService courseService;
+    private final UnleashService unleashService;
 
-    public EnrollmentController(EnrollmentService enrollmentService, StudentService studentService, CourseService courseService) {
+    public EnrollmentController(EnrollmentService enrollmentService, StudentService studentService,
+                                CourseService courseService, UnleashService unleashService) {
         this.enrollmentService = enrollmentService;
         this.studentService = studentService;
         this.courseService = courseService;
+        this.unleashService = unleashService;
     }
 
     @PostMapping
@@ -66,12 +71,17 @@ public class EnrollmentController {
                 request.getLastName()
         );
 
-        Map<String, Object> response = Map.of(
-                "success", true,
-                "enrollment", result.getEnrollment(),
-                "paymentId", result.getPaymentId(),
-                "enrollmentId", result.getEnrollment().getId()
-        );
+        boolean canary = unleashService.isCanaryEnrollmentEnabled();
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("enrollment", result.getEnrollment());
+        response.put("paymentId", result.getPaymentId());
+        response.put("enrollmentId", result.getEnrollment().getId());
+        response.put("canary", canary);
+        response.put("version", canary ? "v2-canary" : "v1-stable");
+        response.put("message", canary
+                ? "✅ Enrollment confirmed! [Canary v2 — instant processing enabled]"
+                : "✅ Enrollment confirmed!");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
