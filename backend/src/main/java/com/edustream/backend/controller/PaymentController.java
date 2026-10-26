@@ -4,10 +4,12 @@ import com.edustream.backend.dto.PaymentRequestDTO;
 import com.edustream.backend.model.Payment;
 import com.edustream.backend.service.EnrollmentService;
 import com.edustream.backend.service.PaymentService;
+import com.edustream.backend.service.UnleashService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +20,13 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final EnrollmentService enrollmentService;
+    private final UnleashService unleashService;
 
-    public PaymentController(PaymentService paymentService, EnrollmentService enrollmentService) {
+    public PaymentController(PaymentService paymentService, EnrollmentService enrollmentService,
+                             UnleashService unleashService) {
         this.paymentService = paymentService;
         this.enrollmentService = enrollmentService;
+        this.unleashService = unleashService;
     }
 
     @PostMapping("/process")
@@ -36,13 +41,18 @@ public class PaymentController {
                 null
         );
 
-        Map<String, Object> response = Map.of(
-                "success", true,
-                "enrollmentId", result.getEnrollment().getId(),
-                "paymentId", result.getPaymentId(),
-                "status", result.getEnrollment().getStatus(),
-                "message", "Paiement et inscription traités avec succès (" + request.getAmount() + " MAD)"
-        );
+        boolean canary = unleashService.isCanaryEnrollmentEnabled();
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("enrollmentId", result.getEnrollment().getId());
+        response.put("paymentId", result.getPaymentId());
+        response.put("status", result.getEnrollment().getStatus());
+        response.put("courseId", request.getCourseId());
+        response.put("canary", canary);
+        response.put("version", canary ? "v2-canary" : "v1-stable");
+        response.put("message", canary
+                ? "Paiement confirme [Canary v2 - traitement instantane] (" + request.getAmount() + " MAD)"
+                : "Paiement et inscription traites avec succes (" + request.getAmount() + " MAD)");
         return ResponseEntity.ok(response);
     }
 
