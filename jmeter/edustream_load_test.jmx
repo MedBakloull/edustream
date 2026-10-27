@@ -140,8 +140,8 @@
             </ResponseAssertion>
             <hashTree/>
           </hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Pacing Réflexion (200ms)" enabled="true">
-            <stringProp name="ConstantTimer.delay">200</stringProp>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time Catalogue (3s)" enabled="true">
+            <stringProp name="ConstantTimer.delay">3000</stringProp>
           </ConstantTimer>
           <hashTree/>
         </hashTree>
@@ -248,8 +248,8 @@
             </ResponseAssertion>
             <hashTree/>
           </hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Pacing Réflexion (200ms)" enabled="true">
-            <stringProp name="ConstantTimer.delay">200</stringProp>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time Paiement (4s)" enabled="true">
+            <stringProp name="ConstantTimer.delay">4000</stringProp>
           </ConstantTimer>
           <hashTree/>
         </hashTree>
