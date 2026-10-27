@@ -46,6 +46,7 @@ export default function PaymentPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [alreadyEnrolled, setAlreadyEnrolled] = useState(false)
+  const [serviceDown, setServiceDown] = useState(false)
 
   useEffect(() => {
     if (course?.id) {
@@ -145,6 +146,11 @@ export default function PaymentPage() {
       const data = await response.json()
 
       if (!response.ok) {
+        if (response.status === 503 || data.error?.toLowerCase().includes('unavailable')) {
+          setServiceDown(true)
+          setLoading(false)
+          return
+        }
         if (data.alreadyEnrolled || (data.error && data.error.toLowerCase().includes('déjà inscrit'))) {
           addEnrolledCourse(course.id, { email, firstName, lastName })
           setAlreadyEnrolled(true)
@@ -186,7 +192,28 @@ export default function PaymentPage() {
               <p className="text-slate-400">Finalisez votre inscription à {course.title}</p>
             </div>
 
-            {alreadyEnrolled ? (
+            {serviceDown ? (
+              <div className="bg-red-950/40 border border-red-500/60 rounded-2xl p-10 text-center space-y-5 shadow-xl">
+                <div className="text-6xl">🔴</div>
+                <h2 className="text-3xl font-bold text-red-400">Service Unavailable</h2>
+                <p className="text-slate-300 text-lg">
+                  Enrollment is currently <strong className="text-red-400">temporarily disabled</strong> by our engineering team.
+                </p>
+                <p className="text-slate-400 text-sm">
+                  This is a controlled rollback. The service will be restored shortly.
+                </p>
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-red-400 font-mono text-sm">Status: CANARY ROLLBACK IN PROGRESS</span>
+                </div>
+                <button
+                  onClick={() => { setServiceDown(false); setError('') }}
+                  className="mt-4 px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : alreadyEnrolled ? (
               <div className="bg-purple-950/40 border border-purple-500/40 rounded-2xl p-8 text-center space-y-4 shadow-xl">
                 <CheckCircle2 className="w-16 h-16 text-purple-400 mx-auto" />
                 <h2 className="text-2xl font-bold text-white">Vous possédez déjà ce cours !</h2>
