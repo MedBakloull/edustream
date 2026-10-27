@@ -1,0 +1,561 @@
+\documentclass[11pt, a4paper, openany]{report}
+
+% =========================================================================
+% PAQUETS FONDAMENTAUX & ENCODAGE
+% =========================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% =========================================================================
+% GÉOMÉTRIE & MISE EN PAGE (CALIBRÉ POUR 18 PAGES)
+% =========================================================================
+\usepackage[margin=2.2cm, top=2.3cm, bottom=2.3cm]{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{colortbl}
+\usepackage{setspace}
+
+\setstretch{1.25} % Interligne académique équilibré
+
+% Configuration des liens hypertexte
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={Rapport d'Ingenierie Logicielle, Qualite & Deploiement Cloud - EduStream},
+}
+
+% Personnalisation des titres
+\titleformat{\chapter}[hang]
+  {\normalfont\LARGE\bfseries\color{blue!75!black}}{\thechapter.\ }{0.5em}{\LARGE}
+\titlespacing*{\chapter}{0pt}{10pt}{15pt}
+
+\titleformat{\section}{\color{blue!70!black}\normalfont\Large\bfseries}{\thesection}{0.8em}{}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+\titleformat{\subsection}{\color{blue!50!black}\normalfont\large\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{8pt}{4pt}
+
+% Configuration du style des blocs de code
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!4},
+    rulecolor=\color{gray!30},
+    keywordstyle=\color{blue!80!black}\bfseries,
+    commentstyle=\color{green!50!black}\itshape,
+    stringstyle=\color{red!70!black},
+    showstringspaces=false,
+    tabsize=2
+}
+
+% Boîtes d'analyse critique IA
+\newtcolorbox{aiCritiqueBox}[1][]{
+    colback=red!3,
+    colframe=red!65!black,
+    title=\textbf{Échec / Proposition Initiale Non Satisfaisante de l'IA},
+    fonttitle=\bfseries\small,
+    boxsep=3pt,
+    top=4pt,
+    bottom=4pt,
+    #1
+}
+
+\newtcolorbox{engSolutionBox}[1][]{
+    colback=green!3,
+    colframe=green!60!black,
+    title=\textbf{Analyse Critique d'Ingénierie \& Solution Corrigée},
+    fonttitle=\bfseries\small,
+    boxsep=3pt,
+    top=4pt,
+    bottom=4pt,
+    #1
+}
+
+% Couleurs personnalisées
+\definecolor{primary}{RGB}{41, 128, 185}
+\definecolor{success}{RGB}{39, 174, 96}
+\definecolor{danger}{RGB}{192, 57, 43}
+
+% En-têtes et pieds de page
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small \leftmark}
+\fancyhead[R]{\small École Mohammadia d’Ingénieurs}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\begin{document}
+
+% =========================================================================
+% PAGE DE GARDE OFFICIELLE
+% =========================================================================
+\begin{titlepage}
+    \begin{flushleft}
+        \IfFileExists{logo.png}{%
+            \includegraphics[width=6.5cm]{logo.png}%
+        }{%
+            \begin{tcolorbox}[width=6cm,colback=gray!10,colframe=blue!75!black,center,halign=center]
+                \textbf{\large ÉCOLE MOHAMMADIA}\\
+                \textbf{\small D'INGÉNIEURS}
+            \end{tcolorbox}
+        }
+    \end{flushleft}
+    
+    \begin{center}
+        \vspace*{0.2cm}
+        \Large{\textbf{ÉCOLE MOHAMMADIA D'INGÉNIEURS}}\\[0.2cm]
+        \large{Département de Génie Informatique}\\[1.2cm]
+        
+        \rule{\textwidth}{1.2pt}\\[0.4cm]
+        \LARGE{\textbf{RAPPORT D'INGÉNIERIE LOGICIELLE}}\\[0.25cm]
+        \Large{\textbf{Assurance Qualité, Tests Formels \& Déploiement Continu Cloud}}\\[0.2cm]
+        \normalsize{\textit{Plateforme EduStream : Du Plan de Test IEEE 829 au Canary Release sous Unleash}}\\[0.35cm]
+        \rule{\textwidth}{1.2pt}\\[1.5cm]
+        
+        \begin{minipage}{0.45\textwidth}
+            \begin{flushleft} \large
+                \textbf{Réalisé par :}\\
+                BAKLOUL Mohamed\\
+                HARBAL Salama
+            \end{flushleft}
+        \end{minipage}
+        ~
+        \begin{minipage}{0.45\textwidth}
+            \begin{flushright} \large
+                \textbf{Sous la direction de :}\\
+                Pr. RETBI
+            \end{flushright}
+        \end{minipage}\\[2.0cm]
+        
+        \vfill
+        \large{Année Universitaire : 2026 – 2027}\\[0.3cm]
+    \end{center}
+\end{titlepage}
+
+% =========================================================================
+% RÉSUMÉ & GLOSSAIRE (PAGE UNIQUE OPTIMISÉE)
+% =========================================================================
+\newpage
+\chapter*{Résumé Exécutif \& Glossaire}
+\addcontentsline{toc}{chapter}{Résumé Exécutif \& Glossaire}
+
+Ce travail d'ingénierie logicielle documente l'ensemble de la chaîne d'assurance qualité et de déploiement continu menée sur la plateforme d'apprentissage en ligne \textbf{EduStream}. Il couvre la formalisation d'un plan de test conforme à la norme \textbf{IEEE 829}, l'automatisation des tests de bout en bout (\textbf{E2E}) avec \textbf{Selenium WebDriver} enrichie d'un moteur d'observation visuelle pas-à-pas, la vérification unitaire backend sous \textbf{JUnit 5} et \textbf{Mockito} auditée par \textbf{JaCoCo} (79\% de couverture globale et 100\% sur les exceptions), l'analyse qualitative des assertions par test de mutation de bytecode avec \textbf{PITest} (83\% de mutants éliminés), et enfin la mise en production sur le Cloud \textbf{Render} (avec base de données managée \textbf{PostgreSQL}) orchestrée par une stratégie de \textbf{Canary Release 50/50} pilotée par \textbf{Unleash} et réversible sous 1,5 seconde via son Kill Switch.
+
+Conformément aux consignes pédagogiques, chaque chapitre confronte la proposition initiale non satisfaisante de l'IA à notre analyse critique d'ingénierie et à la solution finale validée.
+
+\vspace{0.4cm}
+\noindent \textbf{Glossaire et Abréviations :}
+\begin{itemize}[leftmargin=2.5cm, noitemsep, topsep=2pt]
+    \item[\textbf{BVA}] \textit{Boundary Value Analysis} --- Technique de test axée sur les valeurs limites aux frontières.
+    \item[\textbf{CI/CD}] \textit{Continuous Integration / Continuous Delivery} --- Automatisation de l'intégration et de la livraison.
+    \item[\textbf{DOM}] \textit{Document Object Model} --- Représentation arborescente standardisée d'une page HTML.
+    \item[\textbf{DTO}] \textit{Data Transfer Object} --- Objet pur dédié au transport des données entre les couches logicielles.
+    \item[\textbf{E2E}] \textit{End-to-End} --- Tests fonctionnels validant le système du point de vue de l'utilisateur final.
+    \item[\textbf{IEEE 829}] Norme internationale définissant le format standard de la documentation des tests logiciels.
+    \item[\textbf{JaCoCo}] \textit{Java Code Coverage} --- Outil d'analyse métrique mesurant la couverture de code Java.
+    \item[\textbf{MSI}] \textit{Mutation Score Indicator} --- Ratio quantifiant le pourcentage de mutants éliminés par les tests.
+    \item[\textbf{PITest}] Framework de référence pour l'analyse par mutation de bytecode dans l'écosystème Java.
+    \item[\textbf{Unleash}] Plateforme de gestion de drapeaux de fonctionnalités (\textit{Feature Flags}) pour le déploiement progressif.
+\end{itemize}
+
+% =========================================================================
+% TABLE DES MATIÈRES
+% =========================================================================
+\newpage
+\tableofcontents
+\newpage
+
+% =========================================================================
+% CHAPITRE 1 : INTRODUCTION & CADRE MÉTHODOLOGIQUE
+% =========================================================================
+\chapter{Introduction Générale et Démarche Méthodologique}
+
+\section{Contexte du Projet EduStream}
+L'exigence de fiabilité des logiciels distribués modernes impose une chaîne de vérification continue à chaque niveau d'abstraction. L'application \textbf{EduStream} sert de support applicatif à cette étude. Il s'agit d'une plateforme d'apprentissage en ligne permettant aux étudiants de découvrir des cours d'ingénierie classés par catégories (Développement React, Data Science, Product Management), de s'inscrire en réglant les frais en Dirhams marocains (DH) par carte bancaire, d'accéder aux cours via un lecteur multimédia interactif et de suivre leur progression sur un tableau de bord consolidé.
+
+\section{Architecture Globale du Système}
+L'architecture de la plateforme repose sur quatre composants clés :
+\begin{itemize}[label=\textbullet, itemsep=2pt]
+    \item \textbf{Frontend applicatif :} Réalisé avec \textbf{Next.js 16} et \textbf{React 19} (App Router), intégrant une interface réactive et un composant d'état (\texttt{ServiceStatusOverlay}) affichant le statut du routage Canary.
+    \item \textbf{Backend transactionnel :} Conçu avec \textbf{Spring Boot 3.2} sous \textbf{Java 21 (LTS)}, assurant la gestion du catalogue, l'inscription des étudiants (\texttt{EnrollmentService}), la validation algorithmique des cartes bancaires (\texttt{CardValidator}) et le contrôle des doublons.
+    \item \textbf{Base de données relationnelle :} Une instance managée \textbf{PostgreSQL} hébergée sur l'infrastructure Cloud \textbf{Render}.
+    \item \textbf{Plateforme de Feature Flagging :} Un serveur managé \textbf{Unleash Cloud} pilotant en temps réel l'aiguillage progressif du trafic de paiement.
+\end{itemize}
+
+\section{Démarche d'Ingénierie Assistée par IA}
+Ce projet a scrupuleusement intégré l'usage d'outils d'Intelligence Artificielle en respectant une posture d'ingénieur rigoureuse : l'IA accélère la production, mais l'ingénieur en contrôle la pertinence et la conformité aux réalités du système. Chaque chapitre de ce rapport expose :
+\begin{enumerate}[noitemsep]
+    \item La proposition initiale non satisfaisante de l'IA et ses lacunes techniques.
+    \item L'analyse critique d'ingénierie identifiant les causes de l'insuffisance.
+    \item La solution technique définitivement validée et déployée.
+\end{enumerate}
+
+% =========================================================================
+% CHAPITRE 2 : PLAN DE TEST FORMEL (IEEE 829)
+% =========================================================================
+\chapter{Spécification Formelle du Plan de Test (IEEE 829)}
+
+\section{Origine du Besoin et Problématique Initiale}
+Au démarrage du projet, une anomalie fonctionnelle majeure avait été identifiée : après la validation d'un paiement, l'étudiant était redirigé vers une route inexistante, le cours n'était pas enregistré dans son compte et l'interface lui demandait de régler à nouveau la formation. Avant d'intervenir dans le code, la rédaction d'un plan de test formel respectant la norme \textbf{IEEE 829} s'imposait pour formaliser les exigences réelles du parcours utilisateur.
+
+\section{Interaction Critique avec l'IA}
+
+\begin{aiCritiqueBox}
+\textbf{Proposition brute initiale de l'IA (Focalisation exclusive sur le paiement) :}
+Lors de notre première sollicitation pour établir le plan de test d'EduStream, l'IA a produit une ébauche très restreinte :
+\begin{itemize}[label=$\times$, itemsep=1pt]
+    \item \textbf{Focalisation unique sur le paiement :} Le document ne testait que le formulaire de carte bancaire (format du numéro, date d'expiration et cryptogramme).
+    \item \textbf{Omission complète du reste de l'application :} Aucune vérification n'était prévue pour le catalogue de cours, le filtrage par catégories (React, Data, Design), les devises en Dirhams, l'inscription de l'étudiant, le lecteur de cours ou le tableau de bord.
+    \item \textbf{Absence de structure normative :} Aucun identifiant normé, aucune précondition ni critère de validation n'étaient spécifiés.
+\end{itemize}
+\end{aiCritiqueBox}
+
+\begin{engSolutionBox}
+\textbf{Analyse Critique d'Ingénierie \& Solution Corrigée :}
+Une plateforme e-learning forme une chaîne de valeur complète. Un terminal de paiement sans faille ne sert à rien si l'étudiant ne peut pas naviguer dans les cours ou accéder à ses leçons après le débit bancaire.
+
+\textbf{Notre Plan de Test Formel IEEE 829 :}
+Nous avons rejeté ce document incomplet et élaboré une matrice de \textbf{14 cas d'usage réels (UC-01 à UC-14)} couvrant l'ensemble du cycle de vie applicatif, depuis la découverte du catalogue jusqu'à la consultation sur le tableau de bord et la gestion stricte des cas d'erreur.
+\end{engSolutionBox}
+
+\section{Matrice des Cas de Test Formels}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabularx}{\textwidth}{|l|l|X|c|}
+\hline
+\rowcolor{primary!20}
+\textbf{ID Cas} & \textbf{Domaine} & \textbf{Scénario Réel et Critères de Validation} & \textbf{Priorité} \\ \hline
+\textbf{UC-01} & Catalogue \& Devises & Filtrage par catégories (React, Data, Design) et devises en Dirhams (DH). & Haute \\ \hline
+\textbf{UC-02} & Inscription Étudiant & Saisie du formulaire d'inscription, validation email et ouverture de session. & Haute \\ \hline
+\textbf{UC-03} & Tunnel d'Achat & Carte valide à 16 chiffres, date future, cryptogramme et redirection /success. & Critique \\ \hline
+\textbf{UC-04} & Lecteur Multimédia & Déblocage des leçons après paiement et progression interactive. & Haute \\ \hline
+\textbf{UC-05} & Tableau de Bord & Affichage des cours acquis avec statut actif sur la page /dashboard. & Moyenne \\ \hline
+\textbf{UC-06} & Verrou Anti-Doublon & Rejet explicite d'un second paiement pour un cours déjà possédé. & Critique \\ \hline
+\textbf{UC-07} & Authentification & Blocage de l'accès sur mot de passe erroné avec notification d'alerte. & Haute \\ \hline
+\textbf{UC-08} & Conditions d'Usage & Blocage de l'achat si les conditions générales (CGU) ne sont pas cochées. & Haute \\ \hline
+\textbf{UC-09} & Formulaire Incomplet & Détection de champ manquant obligatoire lors de la création de compte. & Moyenne \\ \hline
+\textbf{UC-10} & Carte Tronquée & Rejet immédiat d'une carte de 8 chiffres au lieu des 16 chiffres requis. & Critique \\ \hline
+\textbf{UC-11} & CVV Invalide & Rejet du formulaire bancaire si le cryptogramme comporte 2 chiffres. & Critique \\ \hline
+\textbf{UC-12} & Carte Expirée & Rejet de la transaction si la date d'expiration est antérieure au mois actuel. & Critique \\ \hline
+\textbf{UC-13} & Capacité Épuisée & Rejet de l'inscription lorsque le cours atteint sa capacité limite d'étudiants. & Haute \\ \hline
+\textbf{UC-14} & Routage 404 & Gestion contrôlée de la navigation directe vers un cours inexistant. & Moyenne \\ \hline
+\end{tabularx}
+\caption{Matrice formelle du plan de test restructuré conforme à la norme IEEE 829}
+\end{table}
+
+% =========================================================================
+% CHAPITRE 3 : AUTOMATISATION E2E SELENIUM & MOTEUR VISUEL
+% =========================================================================
+\chapter{Automatisation des Tests E2E avec Selenium WebDriver}
+
+\section{Rôle des Tests de Bout en Bout}
+Les tests E2E valident le système dans des conditions réelles d'utilisation en pilotant directement un navigateur web. Ils vérifient la bonne intégration entre les composants React, l'hydratation du DOM, les communications réseau HTTP et le traitement transactionnel par Spring Boot.
+
+\section{Interaction Critique avec l'IA sur Selenium}
+
+\begin{aiCritiqueBox}
+\textbf{Proposition brute initiale de l'IA (Exécution console aveugle et trop rapide) :}
+Le script d'automatisation Selenium produit initialement par l'IA était inutilisable pour une démonstration :
+\begin{itemize}[label=$\times$, itemsep=1pt]
+    \item \textbf{Mode console silencieux (headless) :} Le navigateur s'exécutait en arrière-plan sans aucune fenêtre graphique visible.
+    \item \textbf{Exécution instantanée :} Les tests se déroulaient en moins de 3 secondes. Il était impossible pour notre professeur ou nous-mêmes de voir les actions effectuées à l'écran.
+    \item \textbf{Absence d'auditabilité visuelle :} En cas d'échec ou de succès, aucune observation humaine n'était réalisable sur l'interface graphique.
+\end{itemize}
+\end{aiCritiqueBox}
+
+\begin{engSolutionBox}
+\textbf{Analyse Critique d'Ingénierie \& Solution Corrigée :}
+Dans une démarche d'audit logiciel, un test E2E doit être observable et pédagogique. L'invisibilité du mode console prive l'évaluateur de la validation ergonomique.
+
+\textbf{Notre Moteur d'Observation Visuelle (Graphic View \& Pacing) :}
+Nous avons réécrit le moteur d'exécution (\texttt{scripts/run-selenium-tests.py}) avec trois fonctionnalités :
+\begin{enumerate}[noitemsep]
+    \item \textbf{Mode graphique visible (\texttt{--headed}) :} Ouverture d'une fenêtre Chrome dimensionnée (1280x800).
+    \item \textbf{Pacing humain cadencé (\textit{Sleep Times}) :} Frappe progressive caractère par caractère avec une pause de 50 ms entre chaque touche et des temps d'observation entre les écrans.
+    \item \textbf{Surbrillance dynamique du DOM :} Injection d'un halo vert émeraude (\texttt{border: 3px solid \#10b981}) autour des champs et boutons ciblés au moment précis de l'interaction.
+\end{enumerate}
+\end{engSolutionBox}
+
+\section{Implémentation du Moteur d'Interaction Visuelle}
+
+\begin{lstlisting}[language=Python, caption=Moteur Selenium avec surbrillance dynamique du DOM et frappe progressive]
+def type_with_visual_feedback(driver, locator, text, typing_speed=0.05):
+    """
+    Localise l'element de maniere explicite, applique une bordure
+    lumineuse verte sur le DOM et simule une frappe humaine cadencee.
+    """
+    element = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable(locator)
+    )
+    # Injection dynamique du style vert emeraude sur l'element DOM
+    driver.execute_script(
+        "arguments[0].style.border='3px solid #10b981'; "
+        "arguments[0].style.boxShadow='0 0 10px rgba(16, 185, 129, 0.7)';", 
+        element
+    )
+    element.clear()
+    # Saisie progressive avec tempo humain
+    for char in text:
+        element.send_keys(char)
+        time.sleep(typing_speed)
+    time.sleep(0.3)
+\end{lstlisting}
+
+Grâce à cette instrumentation, chaque étape du parcours nominal (sélection de cours, saisie des coordonnées, validation de paiement et déblocage des cours) a pu être démontrée visuellement avec clarté.
+
+% =========================================================================
+% CHAPITRE 4 : TESTS UNITAIRES JUNIT 5, MOCKITO ET JACOCO
+% =========================================================================
+\chapter{Tests Unitaires Backend (JUnit 5, Mockito) et Couverture JaCoCo}
+
+\section{Objectif des Tests Unitaires et Isolation}
+Les tests unitaires vérifient la logique métier au niveau le plus fin en isolant les classes de toute dépendance extérieure. Nous avons appliqué une séparation nette des responsabilités :
+\begin{itemize}[label=\textbullet, itemsep=2pt]
+    \item Les algorithmes déterministes sans dépendance (algorithme de Luhn dans \texttt{CardValidator}) testés en JUnit 5 pur.
+    \item Les services métier transactionnels (\texttt{EnrollmentService}) testés avec \textbf{Mockito} pour simuler les accès aux données et forcer les conditions d'erreur.
+\end{itemize}
+
+\section{Interaction Critique avec l'IA sur la Couverture de Code}
+
+\begin{aiCritiqueBox}
+\textbf{Proposition brute initiale de l'IA (Mauvaise couverture de code) :}
+La première suite de tests unitaires générée par l'IA présentait des faiblesses majeures :
+\begin{itemize}[label=$\times$, itemsep=1pt]
+    \item \textbf{Mauvaise couverture de code (Bad Code Coverage) :} L'IA ne testait que le scénario nominal idéal (inscription réussie sans encombre).
+    \item \textbf{Méthodes et règles métier ignorées :} Aucune vérification des doublons d'inscription (\texttt{isStudentEnrolled}), de la capacité maximale du cours ou des cours inexistants.
+    \item \textbf{Score JaCoCo insuffisant :} La couverture des instructions mesurée par le plugin JaCoCo était inférieure à 40\% sur la couche service.
+\end{itemize}
+\end{aiCritiqueBox}
+
+\begin{engSolutionBox}
+\textbf{Analyse Critique d'Ingénierie \& Solution Corrigée :}
+Un test qui n'éprouve que le cas sans erreur n'apporte aucune garantie de robustesse transactionnelle. Les anomalies critiques surviennent lors des conditions limites et des exceptions.
+
+\textbf{Notre Suite Corrigée : 48 Tests Unitaires Exhaustifs :}
+Nous avons implémenté 48 scénarios de tests unitaires couvrant l'ensemble des branches du backend Spring Boot :
+\begin{enumerate}[noitemsep]
+    \item \textbf{8 tests purs (\texttt{CardValidatorTest}) :} Algorithme de Luhn, longueurs de 16 chiffres, rejets des caractères non numériques, dates expirées et cryptogrammes invalides.
+    \item \textbf{40 tests avec Mockito (\texttt{EnrollmentServiceTest}) :} Inscriptions valides, rejet des doublons, gestion des cours introuvables et levée contrôlée des exceptions métier (\texttt{CourseNotFoundException}, \texttt{PaymentFailedException}).
+\end{enumerate}
+\textbf{Résultat :} Le taux de couverture global des instructions sous JaCoCo a atteint \textbf{79\%} (dont \textbf{100\% sur les exceptions métier}).
+\end{engSolutionBox}
+
+\section{Résultats de l'Audit de Couverture JaCoCo}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\rowcolor{primary!20}
+\textbf{Package Backend Audité} & \textbf{Couverture des Instructions} & \textbf{Couverture des Décisions (Branches)} \\ \hline
+\texttt{com.edustream.exception} & \textbf{\color{success}100\% (24 / 24 instructions)} & N/A \\ \hline
+\texttt{com.edustream.controller} & \textbf{79\% (312 / 395 instructions)} & 56\% (18 / 32 branches) \\ \hline
+\texttt{com.edustream.service} & \textbf{77\% (846 / 1098 instructions)} & 49\% (28 / 57 branches) \\ \hline
+\textbf{Total Global Backend} & \textbf{79.2\% (1368 / 1726 instructions)} & \textbf{50.0\% (48 / 96 branches)} \\ \hline
+\end{tabularx}
+\caption{Synthèse de la couverture de code mesurée par JaCoCo}
+\end{table}
+
+\begin{lstlisting}[language=Java, caption=Test unitaire vérifiant le rejet des inscriptions en doublon]
+@Test
+@DisplayName("Rejeter l'inscription si l'etudiant est deja inscrit au cours")
+void shouldRejectEnrollmentWhenStudentAlreadyEnrolled() {
+    String studentEmail = "test.student@emi.ac.ma";
+    String courseId = "react";
+    when(enrollmentRepository.existsByStudentEmailAndCourseId(studentEmail, courseId))
+            .thenReturn(true);
+
+    IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> enrollmentService.enrollStudent(studentEmail, courseId, validCard, null, null)
+    );
+
+    assertEquals("L'etudiant est deja inscrit a ce cours", exception.getMessage());
+    verify(enrollmentRepository, never()).save(any(Enrollment.class));
+}
+\end{lstlisting}
+
+% =========================================================================
+% CHAPITRE 5 : TESTS DE MUTATION AVEC PITEST
+% =========================================================================
+\chapter{Tests de Mutation avec PITest (Qualité des Assertions)}
+
+\section{Principe du Mutation Testing}
+La couverture de code JaCoCo indique quelles lignes ont été exécutées par un test, mais ne mesure pas si les assertions détectent les erreurs. Le \textbf{Mutation Testing} injecte des défauts artificiels (\textit{mutants}) dans le bytecode Java compilé. Si la suite de tests échoue face au code altéré, le mutant est \textbf{tué (Killed)} ; si les tests restent verts, le mutant a \textbf{survécu (Survived)}.
+
+L'indicateur central d'efficacité est le \textbf{Mutation Score Indicator (MSI)} :
+\begin{equation}
+\text{MSI} = \frac{\text{Mutants Tués}}{\text{Mutants Totaux Générés}} \times 100
+\end{equation}
+
+\section{Interaction Critique avec l'IA sur PITest}
+
+\begin{aiCritiqueBox}
+\textbf{Proposition brute initiale de l'IA (Le Lien de Dépendance Direct) :}
+L'expérience avec l'IA sur le Mutation Testing a mis en évidence un problème en chaîne :
+\begin{itemize}[label=$\times$, itemsep=1pt]
+    \item \textbf{Incompatibilité technique sous Java 21 :} L'IA a recommandé une version obsolète (\texttt{pitest-maven:1.7.0}) incompatible avec Java 21, provoquant un crash immédiat du build Maven.
+    \item \textbf{Score de mutation médiocre causé par les tests de l'IA :} Le Mutation Testing s'appuie directement sur les tests JUnit existants. Comme la suite initiale fournie par l'IA offrait une mauvaise couverture fonctionnelle, \textbf{le score de mutation PITest s'est avéré particulièrement mauvais}.
+    \item \textbf{Survie des mutants aux bornes :} Les mutants sur les opérateurs de condition limites (comme \texttt{availableSeats <= 0} muté en \texttt{< 0}) survivaient car aucun test ne ciblait la borne frontière exacte.
+\end{itemize}
+\end{aiCritiqueBox}
+
+\begin{engSolutionBox}
+\textbf{Analyse Critique d'Ingénierie \& Remédiation :}
+Le score de mutation dépend directement de la complétude des tests unitaires. Pour éliminer les mutants survivants, il était indispensable d'associer la mise à jour de l'outillage à une analyse des frontières.
+
+\textbf{Nos Actions d'Ingénierie :}
+\begin{enumerate}[noitemsep]
+    \item Mise à niveau vers \textbf{PITest 1.16.1} avec le moteur \texttt{pitest-junit5-plugin:1.2.1} pour Java 21.
+    \item Application de l'\textbf{Analyse des Valeurs Limites (BVA)} : ajout de tests ciblant précisément la borne frontière (\texttt{seats == 0}) pour éliminer le mutant récalcitrant de l'opérateur \texttt{ConditionalsBoundaryMutator}.
+    \item Contrôle strict des effets de bord avec \texttt{verify(repository).save()} pour neutraliser les mutants de suppression d'instructions (\texttt{VoidMethodCallMutator}).
+\end{enumerate}
+\textbf{Résultat :} Le score de mutation final a atteint \textbf{83\% de mutants tués}.
+\end{engSolutionBox}
+
+\section{Typologie des Mutateurs Bytecode Évalués}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabularx}{\textwidth}{|l|X|c|}
+\hline
+\rowcolor{primary!20}
+\textbf{Opérateur de Mutation} & \textbf{Transformation Injectée dans le Bytecode} & \textbf{Statut Final} \\ \hline
+\texttt{ConditionalsBoundaryMutator} & Remplacement d'une borne \texttt{<=} par \texttt{<} sur le contrôle de capacité. & \textbf{\color{success}TUÉ (KILLED)} \\ \hline
+\texttt{InvertNegativesMutator} & Inversion du signe arithmétique d'un montant de paiement (\texttt{-amount}). & \textbf{\color{success}TUÉ (KILLED)} \\ \hline
+\texttt{ReturnValsMutator} & Remplacement d'un objet retourné par \texttt{Optional.empty()}. & \textbf{\color{success}TUÉ (KILLED)} \\ \hline
+\texttt{VoidMethodCallMutator} & Suppression de l'appel d'enregistrement en base \texttt{repository.save()}. & \textbf{\color{success}TUÉ (KILLED)} \\ \hline
+\texttt{NegateConditionalsMutator} & Inversion pure d'une condition logique booléenne (\texttt{true} en \texttt{false}). & \textbf{\color{success}TUÉ (KILLED)} \\ \hline
+\end{tabularx}
+\caption{Opérateurs de mutation PITest neutralisés après renforcement BVA}
+\end{table}
+
+% =========================================================================
+% CHAPITRE 6 : PRODUCTION CLOUD & CANARY RELEASE AVEC UNLEASH
+% =========================================================================
+\chapter{Déploiement Cloud (Render, PostgreSQL) \& Canary Release avec Unleash}
+
+\section{Architecture de Déploiement en Production}
+L'étape finale a concrétisé la mise en production de la plateforme sur l'infrastructure Cloud \textbf{Render} :
+\begin{itemize}[label=\textbullet, itemsep=2pt]
+    \item Une base de données relationnelle managée \textbf{PostgreSQL} (\texttt{edustream-db}).
+    \item Le backend Spring Boot conteneurisé (\texttt{edustream-0814.onrender.com}).
+    \item Le frontend Next.js conteneurisé (\texttt{edustream-frontend-vzuf.onrender.com}).
+    \item Une instance managée \textbf{Unleash Cloud} pilotant en temps réel les stratégies de \textbf{Canary Release}.
+\end{itemize}
+
+\section{Interaction Critique avec l'IA sur le Déploiement Cloud}
+
+\begin{aiCritiqueBox}
+\textbf{Proposition brute initiale de l'IA (Les Défaillances Système Majeures) :}
+Lors de cette étape d'infrastructure, l'IA a commis trois erreurs bloquantes :
+\begin{enumerate}[noitemsep]
+    \item \textbf{Le crash JDBC PostgreSQL sur Render :} L'IA a préconisé de copier l'URL interne complète fournie par Render directement dans \texttt{SPRING\_DATASOURCE\_URL}. Le backend a immédiatement crashé avec l'erreur : \textit{JDBC URL invalid port number / Driver claims to not accept jdbcUrl}.
+    \item \textbf{Hallucination d'APIs dans le SDK Unleash :} L'IA a utilisé des méthodes inexistantes dans la version 9.2.4 du SDK officiel (\texttt{UnleashConfig.newBuilder()}) et imposé un intervalle illégal \texttt{sendMetricsInterval(0)}.
+    \item \textbf{Proposition d'un faux Canary artificiel :} L'IA a proposé d'ajouter une simple condition CSS côté frontend affichant un bandeau rouge de maintenance, sans aucun aiguillage réseau ni logique backend.
+\end{enumerate}
+\end{aiCritiqueBox}
+
+\begin{engSolutionBox}
+\textbf{Analyse Critique d'Ingénierie \& Solutions Appliquées :}
+\begin{itemize}[label=\textbullet, itemsep=2pt]
+    \item \textbf{Résolution JDBC Render :} L'URL compacte de Render concatène l'utilisateur et l'hôte. Nous avons scindé la configuration en trois variables d'environnement distinctes dans Render : \texttt{SPRING\_DATASOURCE\_URL}, \texttt{SPRING\_DATASOURCE\_USERNAME} et \texttt{SPRING\_DATASOURCE\_PASSWORD}.
+    \item \textbf{SDK Java Unleash officiel :} Utilisation du constructeur officiel \texttt{UnleashConfig.builder()} et mise en place d'une politique de repli gracieux (\textit{Fallback}) vers la version stable v1 en cas d'indisponibilité du serveur Unleash.
+    \item \textbf{Véritable Canary Release 50/50 avec MurmurHash3 :} Rejet du faux écran CSS au profit d'un aiguillage déterministe backend basé sur l'identifiant de l'étudiant, avec métriques en direct sur \texttt{/api/status} et Kill Switch réversible sous 1,5 seconde.
+\end{itemize}
+\end{engSolutionBox}
+
+\section{Partitionnement Déterministe et Protocole de Validation Croisée}
+Pour garantir la cohérence de session sans saut de version intempestif, Unleash applique la fonction de hachage \textbf{MurmurHash3} :
+\begin{equation}
+\text{Bucket}(\text{UserId}) = \left( \text{MurmurHash3\_x86\_32}(\text{UserId} + \text{"canary-enrollment-v2"}) \pmod{100} \right) + 1
+\end{equation}
+Si $\text{Bucket} \le 50$, l'étudiant accède au service \textbf{Canary v2} ; sinon, il est maintenu sur \textbf{Stable v1}.
+
+\begin{lstlisting}[language=Java, caption=Routage dynamique et évaluation Unleash dans PaymentController.java]
+@PostMapping("/process")
+public ResponseEntity<Map<String, Object>> processPayment(@RequestBody PaymentRequestDTO request) {
+    String studentId = request.getStudentEmail();
+    
+    // Evaluation deterministe de la fonctionnalite via Unleash
+    boolean isCanary = unleashService.isCanaryEnrollmentEnabled(studentId);
+
+    EnrollmentResult result = enrollmentService.enrollStudent(
+            studentId, request.getCourseId(), request.getCardData(), null, null);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("success", true);
+    response.put("enrollmentId", result.getEnrollment().getId());
+    response.put("canary", isCanary);
+    response.put("version", isCanary ? "v2-canary" : "v1-stable");
+    response.put("message", isCanary
+            ? "Paiement effectue avec succes [Version v2-canary active]"
+            : "Paiement effectue avec succes [Version v1-stable active]");
+    return ResponseEntity.ok(response);
+}
+\end{lstlisting}
+
+\noindent \textbf{Protocole de Validation Croisée et Kill Switch :}
+\begin{enumerate}[noitemsep]
+    \item \textbf{Depuis la Machine Hôte (Windows 11) :} Connexion à la plateforme déployée sur Render $\implies$ affectation au flux \textbf{Canary v2}.
+    \item \textbf{Depuis la Machine Virtuelle VMware (Linux Ubuntu) :} Connexion simultanée avec un second profil $\implies$ affectation au flux \textbf{Stable v1}.
+    \item \textbf{Déclenchement du Kill Switch dans Unleash Cloud :} Désactivation du drapeau $\implies$ basculement immédiat de l'ensemble du trafic sur la version stable v1 en **moins de 1,5 seconde sans redéploiement de conteneur**.
+\end{enumerate}
+
+% =========================================================================
+% CHAPITRE 7 : ANALYSE COMPARATIVE & CONCLUSION GÉNÉRALE
+% =========================================================================
+\chapter{Bilan d'Ingénierie, Analyse Comparative \& Conclusion}
+
+\section{Typologie des Défaillances de l'IA Rencontrées}
+L'ensemble de nos expérimentations met en évidence trois biais récurrents de l'IA générative :
+\begin{itemize}[label=\textbullet, itemsep=2pt]
+    \item \textbf{La myopie fonctionnelle :} L'IA se focalise spontanément sur le composant le plus immédiat (comme le paiement seul dans le plan de test ou le chemin sans erreur dans JUnit), oubliant les flux périphériques indispensables.
+    \item \textbf{L'illusion de syntaxe (APIs obsolètes ou inventées) :} L'IA produit du code syntaxiquement propre mais reposant sur des méthodes dépréciées ou inexistantes dans les versions récentes.
+    \item \textbf{La substitution cosmétique :} Face à des contraintes d'infrastructure complexes, l'IA propose un contournement d'affichage superficiel (bannière CSS) plutôt qu'une solution réseau pérenne.
+\end{itemize}
+
+\section{Matrice Récapitulative du Projet EduStream}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabularx}{\textwidth}{|l|l|X|X|}
+\hline
+\rowcolor{primary!20}
+\textbf{Session} & \textbf{Domaine} & \textbf{Résultat Insatisfaisant Initial de l'IA} & \textbf{Solution Corrigée d'Ingénierie Validée} \\ \hline
+\textbf{Séance 1} & Plan de Test & Focalisation sur le seul paiement ; absence d'identifiants et de catégories. & Matrice formelle IEEE 829 de 14 cas de test réels couvrant tout le cycle applicatif. \\ \hline
+\textbf{Séance 2} & Selenium E2E & Tests en console invisibles et trop rapides ; aucune observabilité. & Moteur visuel en mode \texttt{--headed}, frappe cadencée et surbrillance verte du DOM. \\ \hline
+\textbf{Séance 3} & Tests Unitaires & Mauvaise couverture de code ; branches d'erreurs et exceptions ignorées. & 48 tests JUnit 5 et Mockito atteignant 79\% de couverture globale et 100\% sur les exceptions. \\ \hline
+\textbf{Séance 4} & Mutation PITest & Score de mutation médiocre causé par les tests incomplets ; crash sous Java 21. & Mise à niveau PITest 1.16.1, analyse BVA des bornes et score de mutation porté à 83\%. \\ \hline
+\textbf{Séance 5} & Cloud \& Canary & Erreur JDBC PostgreSQL sur Render et faux Canary via bannière CSS. & Découpage des variables Render, vrai partitionnement MurmurHash3 et Kill Switch 1,5s. \\ \hline
+\end{tabularx}
+\caption{Synthèse globale des défaillances de l'IA surmontées et des solutions validées}
+\end{table}
+
+\section{Conclusion Générale et Perspectives}
+Ce projet a permis de concrétiser les exigences d'un système distribué en production : la formalisation d'un plan de test formel (IEEE 829), l'observabilité des tests E2E sous Selenium, la robustesse mesurée par la couverture JaCoCo (79\%) et le Mutation Testing sous PITest (83\%), et enfin le déploiement continu sécurisé sur Render avec base PostgreSQL et Canary Release piloté par Unleash.
+
+En perspective, l'architecture pourrait être enrichie par l'analyse automatisée de Canary (\textit{Automated Canary Analysis}) déclenchant le Kill Switch sur alerte de latence Prometheus/Grafana, et l'ingénierie du chaos pour tester la résilience face aux coupures réseau intermittentes.
+
+\end{document}
