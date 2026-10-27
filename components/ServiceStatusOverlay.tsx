@@ -25,6 +25,7 @@ export default function ServiceStatusOverlay() {
   const [data, setData] = useState<CanaryStatus | null>(null)
   const [collapsed, setCollapsed] = useState(false)
   const [clientId, setClientId] = useState('')
+  const [pulse, setPulse] = useState(false)
 
   useEffect(() => {
     let stored = localStorage.getItem('edustream_canary_client_id')
@@ -47,6 +48,7 @@ export default function ServiceStatusOverlay() {
         if (res.ok) {
           const json = await res.json()
           setData(json)
+          setPulse(prev => !prev)
         }
       } catch {
         // Retry
@@ -54,8 +56,16 @@ export default function ServiceStatusOverlay() {
     }
 
     fetchTelemetry()
-    const interval = setInterval(fetchTelemetry, 3000)
-    return () => clearInterval(interval)
+    // ⚡ Fast live polling (every 1.5 seconds) - zero refresh needed!
+    const interval = setInterval(fetchTelemetry, 1500)
+
+    // Re-check immediately when switching back to tab or VMware window
+    window.addEventListener('focus', fetchTelemetry)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', fetchTelemetry)
+    }
   }, [])
 
   if (!data) return null
@@ -80,17 +90,17 @@ export default function ServiceStatusOverlay() {
     >
       <div
         style={{
-          background: 'rgba(15, 23, 42, 0.95)',
+          background: 'rgba(15, 23, 42, 0.96)',
           border: isCanary ? '1px solid #10b981' : '1px solid #3b82f6',
           borderRadius: '12px',
           boxShadow: isCanary
-            ? '0 6px 20px rgba(16, 185, 129, 0.25)'
-            : '0 6px 20px rgba(59, 130, 246, 0.25)',
-          backdropFilter: 'blur(10px)',
+            ? '0 6px 22px rgba(16, 185, 129, 0.3)'
+            : '0 6px 22px rgba(59, 130, 246, 0.3)',
+          backdropFilter: 'blur(12px)',
           padding: collapsed ? '6px 12px' : '10px 14px',
           color: '#f8fafc',
-          width: collapsed ? 'auto' : '260px',
-          transition: 'all 0.25s ease',
+          width: collapsed ? 'auto' : '265px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Header line */}
@@ -102,29 +112,65 @@ export default function ServiceStatusOverlay() {
                 height: '8px',
                 borderRadius: '50%',
                 background: isCanary ? '#10b981' : '#3b82f6',
-                boxShadow: isCanary ? '0 0 8px #10b981' : '0 0 8px #3b82f6',
+                boxShadow: isCanary ? '0 0 10px #10b981' : '0 0 10px #3b82f6',
                 display: 'inline-block',
+                transition: 'background 0.3s ease',
               }}
             />
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isCanary ? '#34d399' : '#60a5fa' }}>
+            <span
+              style={{
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                color: isCanary ? '#34d399' : '#60a5fa',
+                transition: 'color 0.3s ease',
+              }}
+            >
               {isCanary ? '🚀 CANARY v2' : '🛡️ STABLE v1'}
             </span>
           </div>
 
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              cursor: 'pointer',
-              fontSize: '0.75rem',
-              padding: '2px 4px',
-            }}
-            title={collapsed ? 'Expand' : 'Minimize'}
-          >
-            {collapsed ? '▲' : '▼'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Live pulsating heartbeat dot */}
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                fontSize: '0.65rem',
+                color: '#10b981',
+                background: 'rgba(16, 185, 129, 0.1)',
+                padding: '2px 5px',
+                borderRadius: '4px',
+              }}
+            >
+              <span
+                style={{
+                  width: '5px',
+                  height: '5px',
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  opacity: pulse ? 1 : 0.4,
+                  transition: 'opacity 0.4s ease',
+                }}
+              />
+              LIVE
+            </span>
+
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#64748b',
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+                padding: '2px 4px',
+              }}
+              title={collapsed ? 'Expand' : 'Minimize'}
+            >
+              {collapsed ? '▲' : '▼'}
+            </button>
+          </div>
         </div>
 
         {/* Compact stats body */}
@@ -141,10 +187,10 @@ export default function ServiceStatusOverlay() {
               }}
             >
               <span>
-                🛡️ v1: <strong>{v1Count}</strong>
+                🛡️ v1: <strong style={{ color: '#60a5fa' }}>{v1Count}</strong>
               </span>
               <span>
-                🚀 v2: <strong>{v2Count}</strong>
+                🚀 v2: <strong style={{ color: '#34d399' }}>{v2Count}</strong>
               </span>
               <span style={{ color: '#64748b' }}>
                 Total: <strong>{total}</strong>
@@ -163,8 +209,8 @@ export default function ServiceStatusOverlay() {
                 marginBottom: '6px',
               }}
             >
-              <div style={{ width: `${v1Pct}%`, background: '#3b82f6', transition: 'width 0.3s ease' }} />
-              <div style={{ width: `${v2Pct}%`, background: '#10b981', transition: 'width 0.3s ease' }} />
+              <div style={{ width: `${v1Pct}%`, background: '#3b82f6', transition: 'width 0.4s ease' }} />
+              <div style={{ width: `${v2Pct}%`, background: '#10b981', transition: 'width 0.4s ease' }} />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.68rem', color: '#64748b' }}>
