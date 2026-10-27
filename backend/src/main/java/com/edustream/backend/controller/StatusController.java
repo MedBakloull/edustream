@@ -37,4 +37,14 @@ public class StatusController {
 
         return ResponseEntity.ok(status);
     }
+
+    @RequestMapping(value = "/reset", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<Map<String, Object>> resetStatusMetrics() {
+        unleashService.resetAllSessions();
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("reset", true);
+        resp.put("message", "Compteur réinitialisé avec succès");
+        resp.put("metrics", unleashService.getMetrics());
+        return ResponseEntity.ok(resp);
+    }
 }

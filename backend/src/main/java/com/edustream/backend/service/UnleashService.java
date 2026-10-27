@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,6 +20,9 @@ public class UnleashService {
 
     private static final Logger log = LoggerFactory.getLogger(UnleashService.class);
     private static final String FLAG_CANARY = "canary-enrollment-v2";
+
+    // Sessions that have not sent a heartbeat in 6 seconds are considered offline
+    private static final long SESSION_HEARTBEAT_TTL_MS = 6000L;
 
     @Value("${unleash.api.url:}")
     private String unleashApiUrl;
@@ -31,9 +33,18 @@ public class UnleashService {
     private Unleash unleash;
     private boolean unleashAvailable = false;
 
-    // Live distribution telemetry
-    private final Set<String> v1Users = ConcurrentHashMap.newKeySet();
-    private final Set<String> v2Users = ConcurrentHashMap.newKeySet();
+    // Track active online sessions with timestamps (Heartbeat TTL)
+    private static class ActiveSession {
+        final boolean isCanary;
+        final long lastSeen;
+
+        ActiveSession(boolean isCanary, long lastSeen) {
+            this.isCanary = isCanary;
+            this.lastSeen = lastSeen;
+        }
+    }
+
+    private final ConcurrentHashMap<String, ActiveSession> activeSessions = new ConcurrentHashMap<>();
     private final AtomicInteger totalEvaluations = new AtomicInteger(0);
 
     @PostConstruct
@@ -91,21 +102,29 @@ public class UnleashService {
 
     private void recordEvaluation(String userId, boolean isCanary) {
         if (userId == null || userId.isBlank()) return;
-        if (isCanary) {
-            v2Users.add(userId);
-            v1Users.remove(userId);
-        } else {
-            v1Users.add(userId);
-            v2Users.remove(userId);
-        }
+        activeSessions.put(userId, new ActiveSession(isCanary, System.currentTimeMillis()));
+    }
+
+    private void cleanupInactiveSessions() {
+        long now = System.currentTimeMillis();
+        activeSessions.entrySet().removeIf(entry -> (now - entry.getValue().lastSeen) > SESSION_HEARTBEAT_TTL_MS);
     }
 
     public Map<String, Object> getMetrics() {
-        int v1 = v1Users.size();
-        int v2 = v2Users.size();
+        cleanupInactiveSessions();
+
+        int v1 = 0;
+        int v2 = 0;
+        for (ActiveSession session : activeSessions.values()) {
+            if (session.isCanary) {
+                v2++;
+            } else {
+                v1++;
+            }
+        }
         int total = v1 + v2;
-        int v1Percent = total > 0 ? (v1 * 100) / total : 0;
-        int v2Percent = total > 0 ? (v2 * 100) / total : 0;
+        int v1Percent = total > 0 ? (v1 * 100) / total : 50;
+        int v2Percent = total > 0 ? (v2 * 100) / total : 50;
 
         Map<String, Object> metrics = new HashMap<>();
         metrics.put("v1UsersCount", v1);
@@ -115,5 +134,10 @@ public class UnleashService {
         metrics.put("v2Percentage", v2Percent);
         metrics.put("totalEvaluations", totalEvaluations.get());
         return metrics;
+    }
+
+    public void resetAllSessions() {
+        activeSessions.clear();
+        totalEvaluations.set(0);
     }
 }
