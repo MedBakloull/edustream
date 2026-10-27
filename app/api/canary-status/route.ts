@@ -1,16 +1,21 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'https://edustream-0814.onrender.com'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/status`, {
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId') || ''
+    const url = userId
+      ? `${BACKEND_URL}/api/status?userId=${encodeURIComponent(userId)}`
+      : `${BACKEND_URL}/api/status`
+
+    const res = await fetch(url, {
       cache: 'no-store',
     })
     const data = await res.json()
     return NextResponse.json(data)
   } catch {
-    // If backend is unreachable, don't block the site
-    return NextResponse.json({ enrollmentOpen: true, status: 'UNKNOWN' })
+    return NextResponse.json({ status: 'UNKNOWN' })
   }
 }

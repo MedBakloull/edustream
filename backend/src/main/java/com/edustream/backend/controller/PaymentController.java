@@ -6,7 +6,6 @@ import com.edustream.backend.service.EnrollmentService;
 import com.edustream.backend.service.PaymentService;
 import com.edustream.backend.service.UnleashService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,19 +31,10 @@ public class PaymentController {
 
     @PostMapping("/process")
     public ResponseEntity<Map<String, Object>> processPayment(@RequestBody @Valid PaymentRequestDTO request) {
-
-        // KILL SWITCH: if canary flag is OFF, enrollment is blocked instantly
-        if (!unleashService.isCanaryEnrollmentEnabled()) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("error", "Enrollment is temporarily unavailable. Please try again later.");
-            error.put("canary", false);
-            error.put("version", "v1-stable");
-            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
-        }
-
-        // Flag is ON — process enrollment normally (canary v2)
         String studentIdentifier = request.getStudentId() != null ? request.getStudentId() : request.getStudentEmail();
+
+        // 50/50 Canary evaluation based on student identity
+        boolean canary = unleashService.isCanaryEnrollmentEnabled(studentIdentifier);
 
         EnrollmentService.EnrollmentResult result = enrollmentService.enrollStudent(
                 studentIdentifier,
@@ -60,9 +50,11 @@ public class PaymentController {
         response.put("paymentId", result.getPaymentId());
         response.put("status", result.getEnrollment().getStatus());
         response.put("courseId", request.getCourseId());
-        response.put("canary", true);
-        response.put("version", "v2-canary");
-        response.put("message", "Paiement et inscription traites avec succes (" + request.getAmount() + " MAD)");
+        response.put("canary", canary);
+        response.put("version", canary ? "v2-canary" : "v1-stable");
+        response.put("message", canary
+                ? "Paiement confirme [Canary v2 - 50% Rollout activé] (" + request.getAmount() + " MAD)"
+                : "Paiement confirme [Stable v1 - Standard] (" + request.getAmount() + " MAD)");
         return ResponseEntity.ok(response);
     }
 

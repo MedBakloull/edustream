@@ -19,16 +19,20 @@ public class StatusController {
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getStatus() {
-        boolean canary = unleashService.isCanaryEnrollmentEnabled();
+    public ResponseEntity<Map<String, Object>> getStatus(@RequestParam(required = false) String userId) {
+        boolean canary = (userId != null && !userId.isBlank())
+                ? unleashService.isCanaryEnrollmentEnabled(userId)
+                : unleashService.isCanaryEnrollmentEnabled();
 
         Map<String, Object> status = new HashMap<>();
         status.put("service", "edustream-backend");
         status.put("status", "UP");
-        status.put("enrollmentOpen", canary);
         status.put("canaryFlag", "canary-enrollment-v2");
         status.put("canaryActive", canary);
-        status.put("mode", canary ? "CANARY v2 - Enrollment OPEN" : "STABLE v1 - Enrollment BLOCKED");
+        status.put("userId", userId != null ? userId : "anonymous");
+        status.put("assignedVersion", canary ? "v2-canary" : "v1-stable");
+        status.put("mode", canary ? "CANARY v2 (Testing)" : "STABLE v1 (Production Safe)");
+        status.put("metrics", unleashService.getMetrics());
         status.put("timestamp", java.time.Instant.now().toString());
 
         return ResponseEntity.ok(status);
