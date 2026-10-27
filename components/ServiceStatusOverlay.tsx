@@ -13,6 +13,7 @@ interface CanaryStatus {
 export default function ServiceStatusOverlay() {
   const [isDown, setIsDown] = useState(false)
   const [canaryData, setCanaryData] = useState<CanaryStatus | null>(null)
+  const [statusText, setStatusText] = useState('Connecting to Unleash...')
   const [lastUpdated, setLastUpdated] = useState<string>('')
 
   const checkStatus = async () => {
@@ -37,11 +38,15 @@ export default function ServiceStatusOverlay() {
 
       if (data && data.enrollmentOpen !== undefined) {
         setCanaryData(data)
-        setIsDown(data.enrollmentOpen === false)
+        const down = data.enrollmentOpen === false
+        setIsDown(down)
+        setStatusText(down ? 'Rollback Active' : 'v2 Active')
         setLastUpdated(new Date().toLocaleTimeString())
+      } else {
+        setStatusText('Waking up backend...')
       }
     } catch {
-      // On network failure, don't crash
+      setStatusText('Reconnecting...')
     }
   }
 
@@ -131,41 +136,45 @@ export default function ServiceStatusOverlay() {
         </div>
       )}
 
-      {/* 🟢 Live floating Canary badge in the bottom-right corner when UP */}
-      {!isDown && canaryData && (
+      {/* 🟢 Live floating Canary badge in the bottom-right corner */}
+      {!isDown && (
         <div
           style={{
             position: 'fixed',
-            bottom: '16px',
-            right: '16px',
-            zIndex: 9999,
-            background: 'rgba(15, 23, 42, 0.92)',
-            border: '1px solid #334155',
+            bottom: '18px',
+            right: '18px',
+            zIndex: 99999,
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: canaryData ? '1px solid #22c55e' : '1px solid #eab308',
             borderRadius: '9999px',
             padding: '8px 16px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.4)',
-            backdropFilter: 'blur(6px)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(8px)',
             color: '#f8fafc',
             fontSize: '0.82rem',
-            fontWeight: 500,
+            fontWeight: 600,
             fontFamily: 'system-ui, -apple-system, sans-serif',
+            cursor: 'pointer',
           }}
+          onClick={checkStatus}
+          title="Click to manually refresh status"
         >
           <span
             style={{
-              width: '8px',
-              height: '8px',
+              width: '9px',
+              height: '9px',
               borderRadius: '50%',
-              background: '#22c55e',
-              boxShadow: '0 0 8px #22c55e',
+              background: canaryData ? '#22c55e' : '#eab308',
+              boxShadow: canaryData ? '0 0 10px #22c55e' : '0 0 10px #eab308',
               display: 'inline-block',
+              animation: canaryData ? 'none' : 'pulse 1.5s infinite',
             }}
           />
-          <span>Unleash Canary: <strong style={{ color: '#4ade80' }}>v2 Active</strong></span>
-          <span style={{ color: '#64748b', fontSize: '0.75rem' }}>• {lastUpdated}</span>
+          <span>Unleash Canary: <strong style={{ color: canaryData ? '#4ade80' : '#facc15' }}>{statusText}</strong></span>
+          {lastUpdated && <span style={{ color: '#64748b', fontSize: '0.75rem' }}>• {lastUpdated}</span>}
         </div>
       )}
 
