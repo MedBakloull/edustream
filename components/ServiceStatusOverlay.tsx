@@ -27,10 +27,9 @@ export default function ServiceStatusOverlay() {
   const [clientId, setClientId] = useState('')
 
   useEffect(() => {
-    // Generate or retrieve persistent machine/client ID for Unleash hashing
     let stored = localStorage.getItem('edustream_canary_client_id')
     if (!stored) {
-      stored = 'node_' + Math.random().toString(36).substring(2, 9)
+      stored = 'node_' + Math.random().toString(36).substring(2, 8)
       localStorage.setItem('edustream_canary_client_id', stored)
     }
     setClientId(stored)
@@ -50,7 +49,7 @@ export default function ServiceStatusOverlay() {
           setData(json)
         }
       } catch {
-        // Retry next interval
+        // Retry
       }
     }
 
@@ -73,143 +72,104 @@ export default function ServiceStatusOverlay() {
     <div
       style={{
         position: 'fixed',
-        bottom: '16px',
-        left: '50%',
-        transform: 'translateX(-50%)',
+        bottom: '18px',
+        right: '18px',
         zIndex: 99999,
-        maxWidth: '92vw',
-        width: collapsed ? 'auto' : '820px',
-        transition: 'all 0.3s ease',
         fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
       }}
     >
       <div
         style={{
-          background: 'rgba(15, 23, 42, 0.94)',
+          background: 'rgba(15, 23, 42, 0.95)',
           border: isCanary ? '1px solid #10b981' : '1px solid #3b82f6',
-          borderRadius: '16px',
+          borderRadius: '12px',
           boxShadow: isCanary
-            ? '0 10px 30px rgba(16, 185, 129, 0.25)'
-            : '0 10px 30px rgba(59, 130, 246, 0.25)',
-          backdropFilter: 'blur(12px)',
-          padding: collapsed ? '8px 16px' : '14px 20px',
+            ? '0 6px 20px rgba(16, 185, 129, 0.25)'
+            : '0 6px 20px rgba(59, 130, 246, 0.25)',
+          backdropFilter: 'blur(10px)',
+          padding: collapsed ? '6px 12px' : '10px 14px',
           color: '#f8fafc',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
+          width: collapsed ? 'auto' : '260px',
+          transition: 'all 0.25s ease',
         }}
       >
-        {/* Header row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-          {/* Node allocation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                background: isCanary ? '#10b981' : '#3b82f6',
-                boxShadow: isCanary ? '0 0 10px #10b981' : '0 0 10px #3b82f6',
-                display: 'inline-block',
-              }}
-            />
-            <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Your Device is on:</span>
-            <span
-              style={{
-                fontSize: '0.92rem',
-                fontWeight: 700,
-                color: isCanary ? '#34d399' : '#60a5fa',
-                background: isCanary ? 'rgba(16, 185, 129, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                padding: '3px 10px',
-                borderRadius: '8px',
-                letterSpacing: '0.02em',
-              }}
-            >
-              {isCanary ? '🚀 CANARY v2' : '🛡️ STABLE v1'}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: '#64748b' }}>({clientId})</span>
-          </div>
-
-          {/* Toggle / Minimize button */}
+        {/* Header line */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span
               style={{
-                fontSize: '0.75rem',
-                color: '#cbd5e1',
-                background: '#1e293b',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                border: '1px solid #334155',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: isCanary ? '#10b981' : '#3b82f6',
+                boxShadow: isCanary ? '0 0 8px #10b981' : '0 0 8px #3b82f6',
+                display: 'inline-block',
               }}
-            >
-              Unleash Flag: <strong>canary-enrollment-v2</strong>
+            />
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isCanary ? '#34d399' : '#60a5fa' }}>
+              {isCanary ? '🚀 CANARY v2' : '🛡️ STABLE v1'}
             </span>
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#94a3b8',
-                cursor: 'pointer',
-                fontSize: '0.8rem',
-                padding: '4px 8px',
-              }}
-            >
-              {collapsed ? '▲ Expand' : '▼ Hide'}
-            </button>
           </div>
+
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#64748b',
+              cursor: 'pointer',
+              fontSize: '0.75rem',
+              padding: '2px 4px',
+            }}
+            title={collapsed ? 'Expand' : 'Minimize'}
+          >
+            {collapsed ? '▲' : '▼'}
+          </button>
         </div>
 
-        {/* Expanded body: Live Traffic Distribution */}
+        {/* Compact stats body */}
         {!collapsed && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-              borderTop: '1px solid #1e293b',
-              paddingTop: '8px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#cbd5e1' }}>
+          <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #1e293b' }}>
+            {/* Live split numbers */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '0.75rem',
+                color: '#cbd5e1',
+                marginBottom: '6px',
+              }}
+            >
               <span>
-                🛡️ <strong>Stable v1 Users:</strong> {v1Count} ({v1Pct}%)
+                🛡️ v1: <strong>{v1Count}</strong>
               </span>
               <span>
-                🚀 <strong>Canary v2 Users:</strong> {v2Count} ({v2Pct}%)
+                🚀 v2: <strong>{v2Count}</strong>
               </span>
               <span style={{ color: '#64748b' }}>
-                Total Connected: <strong>{total}</strong>
+                Total: <strong>{total}</strong>
               </span>
             </div>
 
-            {/* Visual ratio bar */}
+            {/* Slim ratio bar */}
             <div
               style={{
                 width: '100%',
-                height: '8px',
+                height: '5px',
                 background: '#1e293b',
                 borderRadius: '999px',
                 overflow: 'hidden',
                 display: 'flex',
+                marginBottom: '6px',
               }}
             >
-              <div
-                style={{
-                  width: `${v1Pct}%`,
-                  background: '#3b82f6',
-                  transition: 'width 0.4s ease',
-                }}
-                title={`Stable v1: ${v1Pct}%`}
-              />
-              <div
-                style={{
-                  width: `${v2Pct}%`,
-                  background: '#10b981',
-                  transition: 'width 0.4s ease',
-                }}
-                title={`Canary v2: ${v2Pct}%`}
-              />
+              <div style={{ width: `${v1Pct}%`, background: '#3b82f6', transition: 'width 0.3s ease' }} />
+              <div style={{ width: `${v2Pct}%`, background: '#10b981', transition: 'width 0.3s ease' }} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.68rem', color: '#64748b' }}>
+              <span>Unleash 50% split</span>
+              <span style={{ fontFamily: 'monospace' }}>{clientId}</span>
             </div>
           </div>
         )}
