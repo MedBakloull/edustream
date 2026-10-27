@@ -41,7 +41,7 @@ public class DataInitializer implements CommandLineRunner {
                     "React avancé & architecture",
                     "Construisez des interfaces robustes avec des patterns modernes et testables.",
                     1490.00, // Price in MAD (DH)
-                    10000,
+                    1000000,
                     "Alexandre Dufour",
                     "Développement",
                     12
@@ -52,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Data visualisation avec Python",
                     "Transformez vos données en décisions grâce à des visualisations claires.",
                     990.00, // Price in MAD (DH)
-                    10000,
+                    1000000,
                     "Sophie Martin",
                     "Data & IA",
                     8
@@ -63,11 +63,20 @@ public class DataInitializer implements CommandLineRunner {
                     "Product design systémique",
                     "Créez un langage produit cohérent, accessible et prêt à évoluer.",
                     1190.00, // Price in MAD (DH)
-                    10000,
+                    1000000,
                     "Marie Leclerc",
                     "Design",
                     10
             ));
+        } else {
+            // Mise a niveau automatique de tous les cours existants a 1 000 000 places illimitees
+            for (Course c : courseRepository.findAll()) {
+                if (c.getAvailableSeats() < 500000) {
+                    c.setTotalSeats(1000000);
+                    c.setAvailableSeats(1000000);
+                    courseRepository.save(c);
+                }
+            }
         }
 
         if (studentRepository.count() == 0) {

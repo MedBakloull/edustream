@@ -97,11 +97,11 @@ public class AdminController {
         // 2. Supprimer les milliers d'utilisateurs temporaires crees par JMeter
         studentRepository.deleteAll();
 
-        // 3. Reinitialiser et augmenter les places de tous les cours a 10 000 places
+        // 3. Reinitialiser et augmenter les places de tous les cours a 1 000 000 places (illimite)
         List<com.edustream.backend.model.Course> courses = courseRepository.findAll();
         for (com.edustream.backend.model.Course c : courses) {
-            c.setTotalSeats(10000);
-            c.setAvailableSeats(10000);
+            c.setTotalSeats(1000000);
+            c.setAvailableSeats(1000000);
             courseRepository.save(c);
         }
 
@@ -112,11 +112,11 @@ public class AdminController {
 
         int reactSeats = courseRepository.findById("react")
                 .map(com.edustream.backend.model.Course::getAvailableSeats)
-                .orElse(10000);
+                .orElse(1000000);
 
         return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Base de données nettoyée avec succès ! Les places de tous les cours ont été portées à 10 000.",
+                "message", "Base de données nettoyée avec succès ! Les places de tous les cours ont été portées à 1 000 000 (illimité).",
                 "availableSeatsReact", reactSeats,
                 "totalCourses", courseRepository.count()
         ));
