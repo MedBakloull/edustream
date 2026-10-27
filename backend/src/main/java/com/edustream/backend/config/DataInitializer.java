@@ -41,7 +41,7 @@ public class DataInitializer implements CommandLineRunner {
                     "React avancé & architecture",
                     "Construisez des interfaces robustes avec des patterns modernes et testables.",
                     1490.00, // Price in MAD (DH)
-                    500,
+                    10000,
                     "Alexandre Dufour",
                     "Développement",
                     12
@@ -52,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Data visualisation avec Python",
                     "Transformez vos données en décisions grâce à des visualisations claires.",
                     990.00, // Price in MAD (DH)
-                    500,
+                    10000,
                     "Sophie Martin",
                     "Data & IA",
                     8
@@ -63,7 +63,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Product design systémique",
                     "Créez un langage produit cohérent, accessible et prêt à évoluer.",
                     1190.00, // Price in MAD (DH)
-                    500,
+                    10000,
                     "Marie Leclerc",
                     "Design",
                     10

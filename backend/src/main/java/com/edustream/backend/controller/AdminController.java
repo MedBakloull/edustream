@@ -87,4 +87,38 @@ public class AdminController {
     public ResponseEntity<List<Enrollment>> getAllEnrollments() {
         return ResponseEntity.ok(enrollmentRepository.findAll());
     }
+
+    @RequestMapping(value = "/reset-database", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<Map<String, Object>> resetDatabase() {
+        // 1. Vider les inscriptions et les paiements
+        enrollmentRepository.deleteAll();
+        paymentRepository.deleteAll();
+
+        // 2. Supprimer les milliers d'utilisateurs temporaires crees par JMeter
+        studentRepository.deleteAll();
+
+        // 3. Reinitialiser et augmenter les places de tous les cours a 10 000 places
+        List<com.edustream.backend.model.Course> courses = courseRepository.findAll();
+        for (com.edustream.backend.model.Course c : courses) {
+            c.setTotalSeats(10000);
+            c.setAvailableSeats(10000);
+            courseRepository.save(c);
+        }
+
+        // 4. Restaurer les etudiants officiels de demonstration
+        studentRepository.save(new Student("demo-student", "jean@example.com", "Jean", "Dupont", "password123"));
+        studentRepository.save(new Student("db8e3596", "salama.harbal@example.ma", "Salama", "Harbal", "password123"));
+        studentRepository.save(new Student("admin-001", "admin@edustream.ma", "System", "Admin", adminPassword, "ADMIN"));
+
+        int reactSeats = courseRepository.findById("react")
+                .map(com.edustream.backend.model.Course::getAvailableSeats)
+                .orElse(10000);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Base de données nettoyée avec succès ! Les places de tous les cours ont été portées à 10 000.",
+                "availableSeatsReact", reactSeats,
+                "totalCourses", courseRepository.count()
+        ));
+    }
 }
